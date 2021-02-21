@@ -32,3 +32,5 @@ It provides methods to stop and reset as well as start the timer:
     transform: { _ in Date() }
   ) private var screenshotDate: Date?
 ```
+
+![image](./preview.gif "Preview")

@@ -31,10 +31,10 @@ struct Notify<Value>: DynamicProperty {
 
   init(notificationName: Notification.Name, transform: @escaping (Notification) -> Value ) {
     self._wrapped = .init(wrappedValue:
-                            Wrapper(
-                              notificationName: notificationName,
-                              transform: transform
-                            )
+      Wrapper(
+        notificationName: notificationName,
+        transform: transform
+      )
     )
   }
 }

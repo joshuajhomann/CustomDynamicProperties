@@ -11,10 +11,10 @@ import SwiftUI
 
 @propertyWrapper
 struct Interval: DynamicProperty {
-  private final class Wrapper: ObservableObject {
+  final class Wrapper: ObservableObject {
     @Published var time: TimeInterval = 0
-    let startSubject = PassthroughSubject<Void, Never>()
-    let stopSubject = PassthroughSubject<Void, Never>()
+    private let startSubject = PassthroughSubject<Void, Never>()
+    private let stopSubject = PassthroughSubject<Void, Never>()
     init(interval: TimeInterval) {
       startSubject
         .compactMap { [weak self] _ in
@@ -23,12 +23,19 @@ struct Interval: DynamicProperty {
               .publish(every: interval, on: .main, in: .common)
               .autoconnect()
               .prefix(untilOutputFrom: owner.stopSubject)
-              .map { _ in owner.time + 1 }
+              .map { _ in interval }
+              .scan(owner.time, +)
               .prepend(0)
           }
         }
         .switchToLatest()
         .assign(to: &$time)
+    }
+    func start() {
+      startSubject.send()
+    }
+    func stop() {
+      stopSubject.send()
     }
   }
   @StateObject private var wrappedObject: Wrapper
@@ -41,13 +48,12 @@ struct Interval: DynamicProperty {
       wrappedObject.time = newValue
     }
   }
+
+  var projectedValue: Wrapper {
+    wrappedObject
+  }
+  
   init(update interval: TimeInterval) {
     _wrappedObject = .init(wrappedValue: Wrapper(interval: interval))
-  }
-  func start() {
-    wrappedObject.startSubject.send()
-  }
-  func stop() {
-    wrappedObject.stopSubject.send()
   }
 }
